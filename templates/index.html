@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Index</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="../static/tailwind.css.js"></script>
+  <link href="../static/daisyui.css" type="text/css" rel="stylesheet">
+  <style>
+    :root {
+      --color-miku: #39c5bb;
+      --color-tianyi: #66ccff;
+      --color-longya: #006666;
+      --color-ling: #ee0000;
+      --color-xingchen: #9999ff;
+      --color-miku-semi-trans: #39c5bbaa;
+      --color-longya-semi-trans: #006666cc;
+    }
+
+    .mnroot {
+      background: url("../static/bg.jpeg") no-repeat center;
+      background-size: cover;
+      background-color: #000;
+    }
+
+
+    @keyframes in {
+      0% {
+        opacity: 0;
+      }
+
+      100% {
+        opacity: 100%;
+      }
+    }
+
+    #interactor li {
+      animation: in 0.5s linear;
+    }
+
+    .no-select {
+      user-select: none;
+    }
+  </style>
+</head>
+
+<body class="w-screen h-screen place-content-around items-center flex justify-center m-0 mnroot overflow-hidden"
+  id="root">
+  <nav class="fixed left-0 top-0 navbar">
+    <div class="navbar-start">
+      <div class="dropdown">
+        <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+          </svg>
+        </div>
+        <ul tabindex="0"
+          class="menu menu-md dropdown-content bg-base-500 rounded-box z-1 mt-3 w-full p-2 shadow backdrop-blur-xl">
+          <li onclick="changePage(0)"><a>Level 0</a></li>
+          <li onclick="changePage(1)"><a>Level 1</a></li>
+          <li onclick="changePage(2)"><a>Level 2</a></li>
+          <li onclick="changePage(3)"><a>Level 3</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="z-0 hidden no-select" id="mont-layer">
+    <ul class="w-64 h-35 absolute right-35 text-xl flex flex-col gap-y-5 z-50" id="interactor">
+    </ul>
+    <img class="w-3/10 absolute -bottom-1/100 left-20 -z-10 pointer-events-none" id="character">
+    <div class="bg-linear-180 from-70% from-[rgba(0,0,0,0)] via-80% via-[#39c5bb55] to-93% to-[#006666e7]"
+      style="display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:45; justify-content:center; align-items:center;">
+      <span id="mont-text" style="color:white; font-size:1.7rem; text-shadow: 0 2px 8px #000; z-index: 50;"
+        class="absolute top-13/15 z-20 pointer-events-none"></span>
+      <script>
+        var playing, dialog = 0;
+        const mont = document.getElementById('mont-layer');
+        const montText = document.getElementById("mont-text")
+        const character = document.getElementById("character")
+        character.src = ""
+        const bg = document.getElementById("root")
+
+        class Typewriter {
+          constructor(canvas) {
+            this.text = null;
+            this.canvas = canvas;
+            this.timer = undefined;
+            this.thisChar = 0;
+            this.running = false;
+          }
+          #splitToChars = (str) => {
+            return str.split('');
+          }
+          type(txt, speed) {
+            this.canvas.textContent = ""
+            this.text = this.#splitToChars(txt);
+            this.thisChar = 0;
+            this.running = true;
+            this.timer = setInterval(() => {
+              this.canvas.textContent += this.text[this.thisChar]
+              this.thisChar++
+              if (this.thisChar >= this.text.length) {
+                clearInterval(this.timer);
+                this.running = false
+                dialog++
+              }
+            }, speed || 500)
+          }
+          complete() {
+            clearInterval(this.timer)
+            this.running = false
+            this.canvas.textContent = this.text.join('');
+          }
+          isRunning() {
+            return this.running
+          }
+        }
+        class Interactor {
+          #prop_style
+          constructor() {
+            this.options = [];
+            this.#prop_style = "bg-linear-90 from-[var(--color-xingchen)] via-80% via-[var(--color-tianyi)] to-93% to-[#ffffff00] py-2 px-5 rounded-lg rounded-l-full text-white"
+            this.canvas = document.querySelector("#interactor")
+            this.thisChar = 0;
+            this.running = false;
+          }
+          createInteraction(options, callback) {
+            this.running = true
+            this.options = options
+            this.options.forEach((s, i) => {
+              let _tmp = document.createElement("li")
+              _tmp.className = this.#prop_style
+              _tmp.textContent = s
+              _tmp.onclick = (e) => {e.stopPropagation(); callback({"choice": s, "i": i})}
+              this.canvas.appendChild(_tmp)
+            })
+          }
+          clearInteraction() {
+            this.running = false
+            this.canvas.replaceChildren()
+          }
+          isRunning() {
+            return this.running
+          }
+        }
+
+        const interactor = new Interactor()
+        const typeWriter = new Typewriter(montText);
+        function showMont(text) {
+          typeWriter.type(text, 50)
+          mont.style.display = 'flex';
+          return false
+
+        }
+        function hideMont() {
+          if (!typeWriter.isRunning()) {
+            mont.style.display = "none"
+          } else {
+            typeWriter.complete()
+          }
+        }
+      </script>
+    </div>
+  </div>
+
+
+
+
+  <script>
+    class request {
+      static get(url) {
+        return fetch(url)
+      }
+      static post(url, data) {
+        return fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: new URLSearchParams(data).toString()
+        })
+      }
+    }
+
+    const root = document.querySelector("#root")
+    const changePage = (page) => {
+      console.log(root.childNodes[0])
+      PAGE = page
+      root.children[0].src = `task/${page}`
+    }
+
+    const bgArr = [
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      // section 2
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      // section 3
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      "../static/bg.jpeg",
+      //E1
+      "../static/bg.jpeg",
+      "../static/bg2.jpeg",
+      "../static/bg2.jpeg",
+      "../static/bg2.jpeg",
+      "../static/bg2.jpeg",
+      "../static/bg2.jpeg",
+      "../static/bg2.jpeg",
+      "../static/bg2.jpeg",
+      "../static/bg2.jpeg",
+      "../static/bg2.jpeg",
+      "../static/bg2.jpeg",
+      "../static/bg2.jpeg",
+      "../static/bg2.jpeg",
+      "../static/bg2.jpeg",
+      "../static/bg2.jpeg",
+      "../static/bg2.jpeg",
+      "../static/bg2.jpeg",
+      //E2
+      "../static/bg.jpeg",
+      "../static/bg1.jpeg",
+      "../static/bg1.jpeg",
+      "../static/bg1.jpeg",
+      "../static/bg1.jpeg",
+      "../static/bg1.jpeg",
+      "../static/bg1.jpeg",
+      "../static/bg1.jpeg",
+      "../static/bg1.jpeg",
+      "../static/bg1.jpeg",
+      "../static/bg1.jpeg",
+      "../static/bg1.jpeg",
+
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+
+    const dialogs = [
+      "这是你在某国际学校的第一节课",
+      "你看了看课表，似乎是一个叫做诺顿的老师",
+      "？？？：Ciallo～(∠・ω< )⌒☆!!! 我是诺顿，菲利普诺顿！",
+      "诺顿：很高兴见到你们！",
+      "同学：诺顿老师好！",
+      "你看到诺顿老师的脸刷一下就红了",
+      "诺顿：欸？！同学们这么热情吗？",
+      "诺顿：那……同学们……我们……开……开始吧！",
+      "诺顿老师似乎费了很大劲才说出这句话",
+      "想不到诺顿老师还有这样的一面",
+      "恍惚间，你想象到诺顿老师躺在床上，一脸娇羞",
+      "你感觉到你的心脏在狂跳，身体燥热",
+      "这就是一见钟情怦然心动吗？",
+      "诺顿老师的声音把你拉回了现实",
+      "诺顿：这位同学，你还好吗？",
+      "诺顿把他的额头紧紧地贴在你的额头上",
+      "诺顿：有没有哪里不舒服？要不要去医务室？",
+      "你：唔……我没事……",
+      "诺顿：我不会给你记缺勤的……不过如果你坚持认为你没事……",
+      "诺顿：那我们继续上课吧！",
+      "诺顿老师兴奋地回到了讲台",
+      "他似乎很期待今天的课程",
+      // section 2
+      "诺顿：正如我刚刚所说，今天我们将会开启一个非常有意思的话题～",
+      "诺顿：大家把课本翻到第404页お願いします~",
+      "诺顿：是的！最初之音未来！",
+      "诺顿：李迪克曾说过，五维介质最开始就想使用pgc创作模式",
+      "诺顿：他的观点是，ugc模式一大致命弱点是需要指数级增长的精神利益来维持创作热情",
+      "诺顿：唔……举个例子就是当你拥有第一个10w播放量时和第20个时的成就感会差很多",
+      "诺顿：那么请问浅色蓝是？",
+      "INTERACTION 29",
+
+      "诺顿的脸色沉了下去",
+      "诺顿：真可惜，回答错误了哦～",
+      "诺顿：这位同学，课后请来我办公室一趟吧～",
+      "诺顿老师的脸上露出了一股难以察觉的微笑",
+      // section 3
+      "TWO THOUSAND YEARS LATER...",
+      "下课了",
+      "你：我到底去不去诺顿的办公室呢？",
+      // ending 1 begin
+      "INTERACTION 37 C1",
+      "你：诺顿老师……我……",
+      "诺顿：你终于来了……（哭）",
+      "诺顿：我等了你好久……还以为……你不会来了……(（ㄒoㄒ）)",
+      "你：久等了老师……是的……我来了……",
+      "诺顿：对不起……我不应该果断否认你的答案的……",
+      "诺顿：请不要因此讨厌我……（哽咽）",
+      "你：我……不会的",
+      "诺顿：这个送给你……",
+      "你：这是……？！",
+      "诺顿：是跟了我一辈子的汗巾",
+      "诺顿：请收下它吧",
+      "诺顿：哪怕我不在身边……也请不要忘记我好吗 (ﾉ இωஇ)ﾉ",
+      " ",
+      " ",
+      "你在期待什么？我编不下去了啊喂！",
+      "<|END|>",
+      // ending 2 begin
+      "INTERACTION 37 C2",
+      "（回家中）",
+      "…",
+      "……",
+      "…………",
+      "！",
+      "诺顿：果然！",
+      "诺顿：你心里一直都没有我是吗？",
+      "诺顿：我在办公室里等了你这么久",
+      "诺顿：你居然敢背着我偷偷溜回家？！",
+      "你：诺顿老师！对不起我忘记……",
+      "诺顿：我不管！你就是不喜欢我！",
+      "你：不……",
+      "你还没来得及说完，就两眼一黑昏了过去",
+      "…",
+      "……",
+      "…………",
+      "你：（发生了什么）",
+      "？？？：嘿嘿嘿……只要把你开膛破肚",
+      "？？？：再浸泡福尔马林……",
+      "？？？：要不还是浸泡在透明树脂里吧？",
+      "？？？：你以后就可以永远陪着我了哦",
+      "？？？：记得乖乖听话吧～",
+      "<|END|>",
+    ]
+    const charArr = [
+      "",
+      "",
+      "../static/pn1.png",
+      "../static/pn1.png",
+      "",
+      "../static/pn1.png",
+      "../static/pn1.png",
+      "../static/pn1.png",
+      "../static/pn1.png",
+      "../static/pn1.png",
+      "",
+      "",
+      "",
+      "",
+      "../static/pn2.png",
+      "../static/pn2.png",
+      "../static/pn2.png",
+      "",
+      "../static/pn2.png",
+      "../static/pn2.png",
+      "../static/pn1.png",
+      "../static/pn1.png",
+      // section 2
+      "../static/pn3.png",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      "",
+      "../static/pn4.png",
+      "../static/pn4.png",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      // section 3
+      "",
+      "",
+      "",
+      //E1
+      "",
+      "",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      //E2
+      "",
+      "",
+      "",
+      "",
+      "",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      "../static/pn3.png",
+      "../static/pn3.png",
+
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+    const interactions = {
+      29: {
+        choices: ["钝角！", "妈妈！"],
+        cb: function (no) {
+          dialogs[29] = "你：" + no.choice
+          interactor.clearInteraction()
+        }
+      },
+      37: {
+        choices: ["（还是去吧）", "（算了，回家）"],
+        cb: function (no) {
+          if (no.i == 0) {
+            dialogs[37] = "你：" + no.choice
+          } else {
+            dialogs[54] = "你：" + no.choice
+            dialog = 54
+          }
+          interactor.clearInteraction()
+        }
+      }
+    }
+    window.addEventListener("click", (e) => {
+      if (interactor.isRunning()) return
+      if (interactions[dialog + 1]) {
+        interactor.createInteraction(interactions[dialog + 1].choices, interactions[dialog + 1].cb)
+      }
+      if (typeWriter.isRunning()) {
+        hideMont()
+        dialog++;
+      } else {
+        if (dialogs[dialog] == "<|END|>") {alert("游戏结束"); window.close()}
+        showMont(dialogs[dialog])
+        character.src = charArr[dialog]
+        bg.style.backgroundImage = "url(" + bgArr[dialog] + ")"
+      }
+    })
+
+  </script>
+</body>
+
+</html>
