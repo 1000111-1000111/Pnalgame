@@ -65,7 +65,7 @@
       </div>
     </div>
   </nav>
-
+  <audio preload loop src="../static/wtf.mp3" id="bgm" autoplay></audio>
   <div class="z-0 hidden no-select" id="mont-layer">
     <ul class="w-64 h-35 absolute right-35 text-xl flex flex-col gap-y-5 z-50" id="interactor">
     </ul>
@@ -75,8 +75,9 @@
       <span id="mont-text" style="color:white; font-size:1.7rem; text-shadow: 0 2px 8px #000; z-index: 50;"
         class="absolute top-13/15 z-20 pointer-events-none"></span>
       <script>
-        var playing, dialog = 0;
+        var playing, dialog = 0, mute = false;
         const mont = document.getElementById('mont-layer');
+        const bgm = document.getElementById('bgm');
         const montText = document.getElementById("mont-text")
         const character = document.getElementById("character")
         character.src = ""
@@ -133,7 +134,7 @@
               let _tmp = document.createElement("li")
               _tmp.className = this.#prop_style
               _tmp.textContent = s
-              _tmp.onclick = (e) => {e.stopPropagation(); callback({"choice": s, "i": i})}
+              _tmp.onclick = (e) => { e.stopPropagation(); callback({ "choice": s, "i": i }) }
               this.canvas.appendChild(_tmp)
             })
           }
@@ -467,6 +468,7 @@
       }
     }
     window.addEventListener("click", (e) => {
+      if (bgm.paused && mute == false) bgm.play()
       if (interactor.isRunning()) return
       if (interactions[dialog + 1]) {
         interactor.createInteraction(interactions[dialog + 1].choices, interactions[dialog + 1].cb)
@@ -475,7 +477,7 @@
         hideMont()
         dialog++;
       } else {
-        if (dialogs[dialog] == "<|END|>") {alert("游戏结束"); window.close()}
+        if (dialogs[dialog] == "<|END|>") { alert("游戏结束"); window.close() }
         showMont(dialogs[dialog])
         character.src = charArr[dialog]
         bg.style.backgroundImage = "url(" + bgArr[dialog] + ")"
